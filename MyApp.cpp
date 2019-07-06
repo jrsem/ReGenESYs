@@ -117,8 +117,17 @@ void _buildModel01_CreDelDis(Model* model) {
     create1->setEntitiesPerCreation(1);
     components->insert(create1);
 
+    // Attribute* attribute1 = new Attribute("Attribute_1");
+    // elements->insert(Util::TypeOf<Attribute>(), attribute1);
+    // 
+    // Assign* assign1 = new Assign(model);
+    // Assign::Assignment* attrib1Assignment = new Assign::Assignment(Assign::DestinationType::Attribute, "Attribute_1", "UNIF(0,1)");
+    // assign1->getAssignments()->insert(attrib1Assignment);
+    // components->insert(assign1);
+
     Decide* decide1 = new Decide(model);
-    decide1->getConditions()->insert("UNIF(0,1)>=0.5");
+    decide1->getConditions()->insert("UNIF(0,1)>0.8");
+    decide1->getConditions()->insert("0.3<UNIF(0,1)<=0.8");
 
     Delay* delay1 = new Delay(model);
     delay1->setDelayExpression("2");
@@ -127,11 +136,16 @@ void _buildModel01_CreDelDis(Model* model) {
 
     Dispose* dispose1 = new Dispose(model);
     components->insert(dispose1);
+    Dispose* dispose2 = new Dispose(model);
+    components->insert(dispose2);
+    Dispose* dispose3 = new Dispose(model);
+    components->insert(dispose3);
 
     // connect model components to create a "workflow" -- should always start from a SourceModelComponent and end at a SinkModelComponent (it will be checked)
     create1->getNextComponents()->insert(decide1);
     decide1->getNextComponents()->insert(delay1);
-    decide1->getNextComponents()->insert(dispose1);
+    decide1->getNextComponents()->insert(dispose2);
+    decide1->getNextComponents()->insert(dispose3);
     delay1->getNextComponents()->insert(dispose1);
 }
 
