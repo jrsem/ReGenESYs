@@ -4,10 +4,10 @@
  * and open the template in the editor.
  */
 
-/* 
+/*
  * File:   MyReGenESYsApplication.cpp
  * Author: rafael.luiz.cancian
- * 
+ *
  * Created on 20 de Maio de 2019, 21:01
  */
 
@@ -117,6 +117,9 @@ void _buildModel01_CreDelDis(Model* model) {
     create1->setEntitiesPerCreation(1);
     components->insert(create1);
 
+    Decide* decide1 = new Decide(model);
+    decide1->getConditions()->insert("UNIF(0,1)>=0.5");
+
     Delay* delay1 = new Delay(model);
     delay1->setDelayExpression("2");
     delay1->setDelayTimeUnit(Util::TimeUnit::second);
@@ -126,7 +129,9 @@ void _buildModel01_CreDelDis(Model* model) {
     components->insert(dispose1);
 
     // connect model components to create a "workflow" -- should always start from a SourceModelComponent and end at a SinkModelComponent (it will be checked)
-    create1->getNextComponents()->insert(delay1);
+    create1->getNextComponents()->insert(decide1);
+    decide1->getNextComponents()->insert(delay1);
+    decide1->getNextComponents()->insert(dispose1);
     delay1->getNextComponents()->insert(dispose1);
 }
 
@@ -340,7 +345,7 @@ void _buildMostCompleteModel(Model* model) {
 /**
  * This function shows an example of how to create a simulation model.
  * It creates some handlers for tracing (debug) and for events, set model infos and than creates the model itself.
- * The model is a composition of components (and elements that they use), connected to form a process/fluxogram 
+ * The model is a composition of components (and elements that they use), connected to form a process/fluxogram
  * @param model - The instance returned that will contains the built model
  */
 void MyApp::builAndRunSimulationdModel() {
@@ -360,15 +365,15 @@ ev->addOnReplicationEndHandler(&onReplicationEndHandler);
 ev->addOnProcessEventHandler(&onProcessEventHandler);
      */
 
-    // Insert some fake plugins, since components and elements are NOT dynamic linked. 
+    // Insert some fake plugins, since components and elements are NOT dynamic linked.
     // Basically all ModelComponents and ModelElements classes that may de used to buikd simulation models and to be persisted to files, should be "declared" by plugins.
     this->insertFakePluginsByHand(simulator);
 
     Model* model = new Model(simulator);
 
-    //_buildModel01_CreDelDis(model);
+    _buildModel01_CreDelDis(model);
     //_buildModel02_CreDelDis(model);
-    _buildModel03_CreSeiDelResDis(model);
+    //_buildModel03_CreSeiDelResDis(model);
     //_buildMostCompleteModel(model);
 
     simulator->getModelManager()->insert(model);
