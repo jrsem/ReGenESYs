@@ -50,7 +50,7 @@ void Decide::_execute(Entity* entity) {
     std::string err;
     bool success;
     bool s ;
-    double value;
+    double value,attr;
     int index=0;
     bool elseCondition = true;//indica que vai para a saída else do bloco Decide
     for (std::list<std::string>::iterator it = lets->begin(); it != lets->end(); it++) {
@@ -58,10 +58,12 @@ void Decide::_execute(Entity* entity) {
 
       value = _model->parseExpression(let,&success,&err);
        s = &success;
+       attr = entity->getAttributeValue("Attribute_1");
+       _model->getTraceManager()->trace(Util::TraceLevel::report, "Attribute_1="+std::to_string(attr));
       _model->getTraceManager()->trace(Util::TraceLevel::report, "success checkExpression="+std::to_string(value));
-
+      //Se expressão retornou true, envia entidade para bloco seguinte.
       if(value==1){
-            falseCondition = false;
+            elseCondition = false;
              this->_model->sendEntityToComponent(entity, this->getNextComponents()->getAtRank(index), 0.0);
              break;
            }
