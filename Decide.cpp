@@ -47,24 +47,32 @@ void Decide::_execute(Entity* entity) {
     //string* exp = this->_conditions->first();
     std::string let;
     std::list<std::string>* lets = this->_conditions->getList();
-    for (std::list<std::string>::iterator it = lets->begin(); it != lets->end(); it++) {
-	       let = (*it);
-       }
     std::string err;
     bool success;
-    double value = _model->parseExpression(let,&success,&err);
-    bool s = &success;
-    //std::cout <<"succes checkExpression=" <<success;
-    _model->getTraceManager()->trace(Util::TraceLevel::report, "success checkExpression="+std::to_string(value));
-  
-    if(value==1)
+    bool s ;
+    double value;
+    int index=0;
+    bool elseCondition = true;//indica que vai para a saída else do bloco Decide
+    for (std::list<std::string>::iterator it = lets->begin(); it != lets->end(); it++) {
+	       let = (*it);
 
-           this->_model->sendEntityToComponent(entity, this->getNextComponents()->front(), 0.0);
-       else{
+      value = _model->parseExpression(let,&success,&err);
+       s = &success;
+      _model->getTraceManager()->trace(Util::TraceLevel::report, "success checkExpression="+std::to_string(value));
 
-          //auto it1 = std::next(comps->begin(),1);
-           this->_model->sendEntityToComponent(entity, this->getNextComponents()->getAtRank(1), 0.0);
-        }
+      if(value==1){
+            falseCondition = false;
+             this->_model->sendEntityToComponent(entity, this->getNextComponents()->getAtRank(index), 0.0);
+             break;
+           }
+      index++;
+      }
+      //se não aceitou nenhuma condição a entidade vai para o else do Decide.
+    if(elseCondition){
+      _model->getTraceManager()->trace(Util::TraceLevel::report, "else condition");
+      //this->_model->sendEntityToComponent(entity, this->getNextComponents()->last(), 0.0);
+      this->_model->sendEntityToComponent(entity, this->getNextComponents()->getAtRank(index), 0.0);
+    }
 }
 
 bool Decide::_loadInstance(std::map<std::string, std::string>* fields) {
