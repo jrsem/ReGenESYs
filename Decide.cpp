@@ -6,9 +6,9 @@
 
 /*
  * File:   Decide.cpp
- * Author: rafael.luiz.cancian
+ * Author: marcelo
  *
- * Created on 22 de Maio de 2019, 18:41
+ * Created on 22 de Junho de 2019, 18:41
  */
 
 #include "Decide.h"
@@ -43,32 +43,30 @@ ModelComponent* Decide::LoadInstance(Model* model, std::map<std::string, std::st
 }
 
 void Decide::_execute(Entity* entity) {
+
     //_model->getTraceManager()->trace(Util::TraceLevel::report, "I'm just a Decide model and I'll just send the entity forward");
-    //string* exp = this->_conditions->first();
     std::string let;
     std::list<std::string>* lets = this->_conditions->getList();
-    std::string err;
-    bool success;
-    bool s ;
+
     double value,attr;
     int index=0;
     bool elseCondition = true;//indica que vai para a saída else do bloco Decide
     for (std::list<std::string>::iterator it = lets->begin(); it != lets->end(); it++) {
-	       let = (*it);
-
-      value = _model->parseExpression(let,&success,&err);
-       s = &success;
-       attr = entity->getAttributeValue("Attribute_1");
-       _model->getTraceManager()->trace(Util::TraceLevel::report, "Attribute_1="+std::to_string(attr));
+      let = (*it);
+      value = _model->parseExpression(let);
+      /* Debug */
+      attr = entity->getAttributeValue("Attribute_1");
+      _model->getTraceManager()->trace(Util::TraceLevel::report, "Attribute_1="+std::to_string(attr));
       _model->getTraceManager()->trace(Util::TraceLevel::report, "success checkExpression="+std::to_string(value));
+      /*       */
       //Se expressão retornou true, envia entidade para bloco seguinte.
-      if(value==1){
-            elseCondition = false;
-             this->_model->sendEntityToComponent(entity, this->getNextComponents()->getAtRank(index), 0.0);
-             break;
-           }
-      index++;
+      if(value != 0){
+          elseCondition = false;
+          this->_model->sendEntityToComponent(entity, this->getNextComponents()->getAtRank(index), 0.0);
+          break;
       }
+      index++;
+    }
       //se não aceitou nenhuma condição a entidade vai para o else do Decide.
     if(elseCondition){
       _model->getTraceManager()->trace(Util::TraceLevel::report, "else condition");
@@ -93,7 +91,15 @@ std::map<std::string, std::string>* Decide::_saveInstance() {
 }
 
 bool Decide::_check(std::string* errorMessage) {
-    return true;
+    bool resultAll;
+    std::string let, err;
+    std::list<std::string>* lets = this->_conditions->getList();
+
+    for (std::list<std::string>::iterator it = lets->begin(); it != lets->end(); it++) {
+      let = (*it);
+      resultAll &= _model->checkExpression(let,"Decide Condition "+let,&err);
+    }
+    return resultAll;
 }
 
 PluginInformation* Decide::GetPluginInformation(){
