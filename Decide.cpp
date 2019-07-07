@@ -87,11 +87,20 @@ void Decide::_initBetweenReplications() {
 
 std::map<std::string, std::string>* Decide::_saveInstance() {
     std::map<std::string, std::string>* fields = ModelComponent::_saveInstance();
+    std::list<std::string>* lets = this->_conditions->getList();
+    std::string let;
+    fields->emplace("conditions", std::to_string(_conditions->size()));
+    unsigned short i = 0;
+    for (std::list<std::string>::iterator it = lets->begin(); it != lets->end(); it++) {
+      let = (*it);
+      fields->emplace("condition" + std::to_string(i), let);
+      i++;
+    }
     return fields;
 }
 
 bool Decide::_check(std::string* errorMessage) {
-    bool resultAll;
+    bool resultAll=true;
     std::string let, err;
     std::list<std::string>* lets = this->_conditions->getList();
 
